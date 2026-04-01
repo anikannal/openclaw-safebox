@@ -162,16 +162,21 @@ Write-Host "  AI provider" -ForegroundColor White
 Write-Dim "You need an API key for at least one AI provider."
 Write-Host ""
 Write-Host "  Anthropic API key " -NoNewline; Write-Dim "(get one at console.anthropic.com — recommended)"
-Write-Dim "Leave blank to skip if you're using OpenAI instead."
+Write-Dim "Leave blank to skip."
 $NewAnthropicKey = Read-Value -Default (Existing "ANTHROPIC_API_KEY")
 
 Write-Host ""
 Write-Host "  OpenAI API key " -NoNewline; Write-Dim "(get one at platform.openai.com)"
-Write-Dim "Leave blank to skip if you're using Anthropic instead."
+Write-Dim "Leave blank to skip."
 $NewOpenAIKey = Read-Value -Default (Existing "OPENAI_API_KEY")
 
-if ([string]::IsNullOrWhiteSpace($NewAnthropicKey) -and [string]::IsNullOrWhiteSpace($NewOpenAIKey)) {
-  Write-Fail "You must provide at least one AI provider API key (Anthropic or OpenAI)."
+Write-Host ""
+Write-Host "  Google Gemini API key " -NoNewline; Write-Dim "(get one at aistudio.google.com/app/apikey)"
+Write-Dim "Leave blank to skip."
+$NewGeminiKey = Read-Value -Default (Existing "GEMINI_API_KEY")
+
+if ([string]::IsNullOrWhiteSpace($NewAnthropicKey) -and [string]::IsNullOrWhiteSpace($NewOpenAIKey) -and [string]::IsNullOrWhiteSpace($NewGeminiKey)) {
+  Write-Fail "You must provide at least one AI provider API key (Anthropic, OpenAI, or Gemini)."
 }
 
 # ── Messaging channel ─────────────────────────────────────────────────────────
@@ -233,6 +238,7 @@ OPENCLAW_GATEWAY_TOKEN=$NewGatewayToken
 # AI provider(s)
 ANTHROPIC_API_KEY=$NewAnthropicKey
 OPENAI_API_KEY=$NewOpenAIKey
+GEMINI_API_KEY=$NewGeminiKey
 
 # Messaging channels
 TELEGRAM_BOT_TOKEN=$NewTelegramToken

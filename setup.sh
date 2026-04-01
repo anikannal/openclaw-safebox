@@ -146,18 +146,24 @@ echo -e "  ${BOLD}AI provider${RESET}"
 echo -e "  ${DIM}You need an API key for at least one AI provider.${RESET}"
 echo ""
 echo -e "  Anthropic API key ${DIM}(get one at console.anthropic.com — recommended)${RESET}"
-echo -e "  ${DIM}Leave blank to skip if you're using OpenAI instead.${RESET}"
+echo -e "  ${DIM}Leave blank to skip.${RESET}"
 NEW_ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
 prompt NEW_ANTHROPIC_API_KEY "" "${ANTHROPIC_API_KEY:-}"
 
 echo ""
 echo -e "  OpenAI API key ${DIM}(get one at platform.openai.com)${RESET}"
-echo -e "  ${DIM}Leave blank to skip if you're using Anthropic instead.${RESET}"
+echo -e "  ${DIM}Leave blank to skip.${RESET}"
 NEW_OPENAI_API_KEY="${OPENAI_API_KEY:-}"
 prompt NEW_OPENAI_API_KEY "" "${OPENAI_API_KEY:-}"
 
-if [[ -z "$NEW_ANTHROPIC_API_KEY" && -z "$NEW_OPENAI_API_KEY" ]]; then
-  fail "You must provide at least one AI provider API key (Anthropic or OpenAI)."
+echo ""
+echo -e "  Google Gemini API key ${DIM}(get one at aistudio.google.com/app/apikey)${RESET}"
+echo -e "  ${DIM}Leave blank to skip.${RESET}"
+NEW_GEMINI_API_KEY="${GEMINI_API_KEY:-}"
+prompt NEW_GEMINI_API_KEY "" "${GEMINI_API_KEY:-}"
+
+if [[ -z "$NEW_ANTHROPIC_API_KEY" && -z "$NEW_OPENAI_API_KEY" && -z "$NEW_GEMINI_API_KEY" ]]; then
+  fail "You must provide at least one AI provider API key (Anthropic, OpenAI, or Gemini)."
 fi
 
 # ── Messaging channel ─────────────────────────────────────────────────────────
@@ -225,6 +231,7 @@ OPENCLAW_GATEWAY_TOKEN=${NEW_GATEWAY_TOKEN}
 # AI provider(s)
 ANTHROPIC_API_KEY=${NEW_ANTHROPIC_API_KEY}
 OPENAI_API_KEY=${NEW_OPENAI_API_KEY}
+GEMINI_API_KEY=${NEW_GEMINI_API_KEY}
 
 # Messaging channels
 TELEGRAM_BOT_TOKEN=${NEW_TELEGRAM_BOT_TOKEN}
