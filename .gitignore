@@ -5,6 +5,10 @@
 # !! NEVER commit .env — it contains your API keys and gateway token !!
 .env
 
+# Internal project docs — not needed by end users
+CLAUDE.md
+*.docx
+
 # macOS
 .DS_Store
 .AppleDouble
