@@ -1,0 +1,198 @@
+# =============================================================================
+# OpenClaw Safe-Box — docker-compose.yml
+# =============================================================================
+#
+# A hardened Docker Compose configuration for running OpenClaw safely on a
+# personal laptop. Key guarantees:
+#
+#   ✅  Only ~/openclaw-workspace is accessible to the container
+#   ✅  Control UI is bound to localhost only (127.0.0.1:18789)
+#   ✅  Container runs read-only with no Linux capabilities
+#   ✅  Runs as non-root user (node, UID 1000)
+#   ✅  Docker socket is never mounted (no host root escape path)
+#   ✅  Messaging channels (Telegram, Discord, Slack) work via outbound polling
+#
+# Usage:
+#   First run:  ./setup.sh  (Mac/Linux)  or  .\setup.ps1  (Windows)
+#   Start:      docker compose up -d
+#   Stop:       docker compose stop
+#   Add channel: ./add-channel.sh telegram  (wraps docker compose run)
+#   Logs:       docker compose logs -f openclaw-gateway
+#   Full reset: docker compose down -v
+#
+# Requires: Docker Desktop (or Docker Engine + Compose v2) with ~2 GB RAM.
+# See README.md for the full setup guide.
+# =============================================================================
+
+# -- Shared security defaults -------------------------------------------------
+# Applied identically to both services via YAML anchor. Do not relax these
+# without understanding the security implications (see design doc).
+x-security: &security-defaults
+  # Root filesystem is read-only. Writable paths are provided via volumes and
+  # tmpfs below, so OpenClaw still functions normally.
+  read_only: true
+
+  # Drop every Linux capability. OpenClaw is a Node.js app serving a web UI
+  # and polling external APIs — it needs none of the default capabilities.
+  cap_drop:
+    - ALL
+
+  # Prevent any process inside the container from gaining new privileges via
+  # setuid binaries or file capabilities (belt-and-suspenders with cap_drop).
+  security_opt:
+    - no-new-privileges:true
+
+  # Run as the 'node' user (UID/GID 1000), which the official OpenClaw image
+  # is built to run as. Never run as root (UID 0).
+  user: "1000:1000"
+
+# =============================================================================
+services:
+
+  # ---------------------------------------------------------------------------
+  # openclaw-gateway — the main service
+  #
+  # Runs the OpenClaw gateway, serves the Control UI at localhost:18789, and
+  # maintains persistent state via the named volume + workspace bind mount.
+  # This container stays resident; restart it with: docker compose restart
+  # ---------------------------------------------------------------------------
+  openclaw-gateway:
+    <<: *security-defaults
+    image: ${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:latest}
+    container_name: openclaw-gateway
+    restart: unless-stopped
+
+    ports:
+      # CRITICAL: 127.0.0.1 prefix binds ONLY to localhost.
+      # Never change this to 0.0.0.0 — that would expose the Control UI and
+      # the WebSocket endpoint to your local network (and is the root cause of
+      # CVE-2026-25253 "ClawJacked" on publicly-accessible installs).
+      - "127.0.0.1:18789:18789"
+
+    volumes:
+      # Named Docker volume — holds OpenClaw's internal config, gateway token,
+      # and channel credentials. Managed by Docker; not directly accessible as
+      # a folder on your laptop. Use 'docker compose down -v' to wipe it.
+      - openclaw-data:/home/node/.openclaw
+
+      # Bind mount — the ONLY host directory the container can see.
+      # This is ~/openclaw-workspace on your machine, mounted as the workspace
+      # subdirectory inside the container. Files the agent creates or reads
+      # live here. Change OPENCLAW_WORKSPACE in .env to use a different path.
+      - type: bind
+        source: ${OPENCLAW_WORKSPACE:-~/openclaw-workspace}
+        target: /home/node/.openclaw/workspace
+
+    tmpfs:
+      # Writable scratch space for /tmp. Size-limited so a runaway process
+      # can't exhaust host RAM. mode=1777 matches standard /tmp permissions.
+      - /tmp:size=128m,mode=1777
+
+    environment:
+      # -- Authentication -------------------------------------------------------
+      # Gateway token — all connections to the Control UI must present this.
+      # Generated automatically by setup.sh and stored in .env. Do not share it.
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+
+      # -- AI provider (set at least one) ---------------------------------------
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+
+      # -- Security hardening ---------------------------------------------------
+      # Explicitly disable the insecure private WebSocket mode that allows
+      # unauthenticated connections. This is the mitigation for CVE-2026-25253.
+      - OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=false
+
+      # -- Optional channel tokens (can also be set via Control UI) -------------
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN:-}
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-}
+      - SLACK_APP_TOKEN=${SLACK_APP_TOKEN:-}
+
+      # -- Misc -----------------------------------------------------------------
+      - TZ=${TZ:-UTC}
+
+    healthcheck:
+      # Polls the unauthenticated liveness endpoint. The gateway won't receive
+      # traffic from openclaw-cli until this passes (see depends_on below).
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:18789/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ---------------------------------------------------------------------------
+  # openclaw-cli — channel configuration helper
+  #
+  # A short-lived container used only for channel setup and management.
+  # It is never started by 'docker compose up' — only by the helper scripts
+  # (add-channel.sh) via 'docker compose run --rm openclaw-cli <command>'.
+  #
+  # Examples (called by add-channel.sh, not directly by users):
+  #   docker compose run --rm openclaw-cli channels add --channel telegram --token "<token>"
+  #   docker compose run --rm openclaw-cli channels add --channel discord  --token "<token>"
+  #   docker compose run --rm openclaw-cli channels login   # WhatsApp QR flow
+  # ---------------------------------------------------------------------------
+  openclaw-cli:
+    <<: *security-defaults
+    image: ${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:latest}
+
+    # 'cli' profile means this service is ignored by 'docker compose up'.
+    # It only runs when explicitly invoked with --profile cli or via
+    # 'docker compose run --rm openclaw-cli'.
+    profiles:
+      - cli
+
+    depends_on:
+      openclaw-gateway:
+        condition: service_healthy
+
+    # Share the same volumes as the gateway so channel credentials are persisted.
+    volumes:
+      - openclaw-data:/home/node/.openclaw
+      - type: bind
+        source: ${OPENCLAW_WORKSPACE:-~/openclaw-workspace}
+        target: /home/node/.openclaw/workspace
+
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+
+    environment:
+      # Needs the gateway token to authenticate its API calls to the gateway.
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - TZ=${TZ:-UTC}
+
+# =============================================================================
+volumes:
+
+  # Named volume for OpenClaw's internal config and state (gateway token,
+  # channel credentials, skills, etc.). Survives container restarts and
+  # updates. Wiped only by 'docker compose down -v'.
+  openclaw-data:
+    name: openclaw-safebox-data
+
+# =============================================================================
+# Security notes
+# =============================================================================
+#
+# What this config does NOT do, and why:
+#
+# ❌ No Docker socket mount (/var/run/docker.sock)
+#    Mounting the socket gives the container root-equivalent access to the host.
+#    OpenClaw's sandbox mode (Docker-in-Docker) requires it, so we use process
+#    isolation only. DinD support is planned for v2.
+#
+# ❌ No host network mode
+#    Container gets its own network namespace. Outbound internet works normally
+#    (Telegram, Discord etc. via polling). No inbound access from your LAN.
+#
+# ❌ No privileged mode
+#    Would bypass cap_drop, seccomp, and AppArmor. Never needed here.
+#
+# ❌ No additional capabilities (cap_add)
+#    OpenClaw needs none. Adding them would only widen the attack surface.
+#
+# The primary remaining risk is a kernel-level container escape via an
+# unpatched CVE. This is mitigated by keeping Docker Desktop up to date and
+# not running untrusted OpenClaw skills. For very sensitive environments,
+# use a dedicated VM instead of this setup.

@@ -1,0 +1,27 @@
+# =============================================================================
+# OpenClaw Safe-Box — .gitignore
+# =============================================================================
+
+# !! NEVER commit .env — it contains your API keys and gateway token !!
+.env
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Editor noise
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Runtime artefacts the setup script might create
+*.bak
+*.log
