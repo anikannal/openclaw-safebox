@@ -134,4 +134,8 @@ echo -e "  Files are ready at: ${BOLD}${INSTALL_DIR}${RESET}"
 echo -e "  ${DIM}Launching setup.sh...${RESET}"
 echo ""
 
-exec "$INSTALL_DIR/setup.sh"
+# Reconnect stdin to the terminal before running setup.sh.
+# When this script is piped through curl, stdin is the pipe (not the
+# terminal), which causes 'read' prompts in setup.sh to fail immediately.
+# /dev/tty is always the controlling terminal regardless of redirection.
+exec "$INSTALL_DIR/setup.sh" </dev/tty
