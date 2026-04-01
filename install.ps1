@@ -4,7 +4,7 @@
 # One-line installer for Windows (PowerShell)
 #
 # Usage (run in PowerShell):
-#   irm https://raw.githubusercontent.com/YOUR_USERNAME/openclaw-safebox/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/anikannal/openclaw-safebox/main/install.ps1 | iex
 #
 # What this does:
 #   1. Checks that Docker is installed and running
@@ -19,10 +19,10 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 # =============================================================================
-# Config — update YOUR_USERNAME before publishing
+# Config — update anikannal before publishing
 # =============================================================================
-$RepoUrl  = "https://github.com/YOUR_USERNAME/openclaw-safebox.git"
-$ZipUrl   = "https://github.com/YOUR_USERNAME/openclaw-safebox/archive/refs/heads/main.zip"
+$RepoUrl  = "https://github.com/anikannal/openclaw-safebox.git"
+$ZipUrl   = "https://github.com/anikannal/openclaw-safebox/archive/refs/heads/main.zip"
 $InstallDir = if ($env:OPENCLAW_INSTALL_DIR) { $env:OPENCLAW_INSTALL_DIR } `
               else { Join-Path $env:USERPROFILE "openclaw-safebox" }
 

@@ -4,7 +4,7 @@
 # One-line installer for Mac and Linux
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/openclaw-safebox/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/anikannal/openclaw-safebox/main/install.sh | bash
 #
 # What this does:
 #   1. Checks that Docker is installed and running
@@ -15,10 +15,10 @@
 set -euo pipefail
 
 # =============================================================================
-# Config — update YOUR_USERNAME before publishing
+# Config — update anikannal before publishing
 # =============================================================================
-REPO_URL="https://github.com/YOUR_USERNAME/openclaw-safebox.git"
-ZIP_URL="https://github.com/YOUR_USERNAME/openclaw-safebox/archive/refs/heads/main.zip"
+REPO_URL="https://github.com/anikannal/openclaw-safebox.git"
+ZIP_URL="https://github.com/anikannal/openclaw-safebox/archive/refs/heads/main.zip"
 INSTALL_DIR="${OPENCLAW_INSTALL_DIR:-$HOME/openclaw-safebox}"
 
 # =============================================================================
@@ -106,7 +106,7 @@ else
       wget -q "$ZIP_URL" -O "$TMP_ZIP" \
         || fail "Download failed. Check your internet connection and try again."
     else
-      fail "Neither git, curl, nor wget is available.\n\n  Please install one of them, or download the zip manually from:\n  https://github.com/YOUR_USERNAME/openclaw-safebox"
+      fail "Neither git, curl, nor wget is available.\n\n  Please install one of them, or download the zip manually from:\n  https://github.com/anikannal/openclaw-safebox"
     fi
 
     # Unzip — the archive extracts to openclaw-safebox-main/

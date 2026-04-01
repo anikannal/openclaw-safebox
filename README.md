@@ -25,7 +25,7 @@ Before you start, have these three things ready:
 Open Terminal and run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/openclaw-safebox/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/anikannal/openclaw-safebox/main/install.sh | bash
 ```
 
 That's it. The installer checks your Docker setup, downloads the Safe-Box files to `~/openclaw-safebox`, and walks you through configuration. Your browser will open automatically when it's done.
@@ -35,14 +35,14 @@ That's it. The installer checks your Docker setup, downloads the Safe-Box files 
 
 **Download and inspect first (recommended for the cautious):**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/openclaw-safebox/main/install.sh -o install.sh
+curl -fsSL https://raw.githubusercontent.com/anikannal/openclaw-safebox/main/install.sh -o install.sh
 # Read install.sh, then:
 bash install.sh
 ```
 
 **With git:**
 ```bash
-git clone https://github.com/YOUR_USERNAME/openclaw-safebox.git ~/openclaw-safebox
+git clone https://github.com/anikannal/openclaw-safebox.git ~/openclaw-safebox
 ~/openclaw-safebox/setup.sh
 ```
 
@@ -55,7 +55,7 @@ git clone https://github.com/YOUR_USERNAME/openclaw-safebox.git ~/openclaw-safeb
 Open **PowerShell** (search for it in the Start menu — not Command Prompt) and run:
 
 ```powershell
-irm https://raw.githubusercontent.com/YOUR_USERNAME/openclaw-safebox/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/anikannal/openclaw-safebox/main/install.ps1 | iex
 ```
 
 > If you see "scripts are disabled", run this first, then try again:
@@ -68,14 +68,14 @@ The installer checks Docker, downloads the Safe-Box files to `~\openclaw-safebox
 
 **Download and inspect first:**
 ```powershell
-irm https://raw.githubusercontent.com/YOUR_USERNAME/openclaw-safebox/main/install.ps1 -OutFile install.ps1
+irm https://raw.githubusercontent.com/anikannal/openclaw-safebox/main/install.ps1 -OutFile install.ps1
 # Read install.ps1, then:
 .\install.ps1
 ```
 
 **With git:**
 ```powershell
-git clone https://github.com/YOUR_USERNAME/openclaw-safebox.git ~\openclaw-safebox
+git clone https://github.com/anikannal/openclaw-safebox.git ~\openclaw-safebox
 ~\openclaw-safebox\setup.ps1
 ```
 
@@ -259,7 +259,7 @@ Check the full logs first — they usually tell you what happened:
 docker compose logs openclaw-gateway
 ```
 
-If you're stuck, open an issue on the [OpenClaw Safe-Box GitHub repository](https://github.com/YOUR_USERNAME/openclaw-safebox/issues) or check the [OpenClaw community forums](https://github.com/openclaw/openclaw/discussions).
+If you're stuck, open an issue on the [OpenClaw Safe-Box GitHub repository](https://github.com/anikannal/openclaw-safebox/issues) or check the [OpenClaw community forums](https://github.com/openclaw/openclaw/discussions).
 
 ---
 

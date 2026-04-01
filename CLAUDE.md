@@ -8,7 +8,7 @@ A hardened, beginner-friendly Docker distribution of [OpenClaw](https://github.c
 
 **Project name:** OpenClaw Safe-Box
 **Status:** v0.1 implementation complete. All scripts written; pending real-world test run.
-**Repo:** https://github.com/YOUR_USERNAME/openclaw-safebox (update once published)
+**Repo:** https://github.com/anikannal/openclaw-safebox (update once published)
 **Distribution plan:** Public GitHub repo — users either `git clone` or download the zip via GitHub's "Code → Download ZIP". No separate releases workflow needed for v1.
 
 ---
